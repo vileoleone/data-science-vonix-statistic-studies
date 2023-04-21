@@ -9,11 +9,12 @@ psycopg2-binary = "*"
 mysql-connector-python = "*"
 matplotlib = "*"
 pandas = "*"
-sklearn = "*"
 seaborn = "*"
+scikit-learn = "*"
 
 [dev-packages]
 black = "*"
+rich = "*"
 
 [requires]
 python_version = "3.11"

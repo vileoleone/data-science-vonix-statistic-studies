@@ -1,4 +1,6 @@
 from src.vonixstatisc.models import StandardModel
+from src.vonixstatisc.functions import metricFunctions
+import pandas as pd
 
 dataset_1 = [
     2329,
@@ -1003,9 +1005,13 @@ dataset_1 = [
     187,
     4,
 ]
-
-model = StandardModel()
-dataset = model.construct_model(dataset_1)
-
-
-print(dataset)
+dataset_2 = [69, 59, 70, 2263, 1922, 3891, 4531, 4386]
+model = StandardModel(dataset_1, dataset_2)
+model_s = model.model()
+# print(model_s)
+dataset_1 = model.predict_results
+##print(sorted(dataset_1['y_predict']))
+# print(len(dataset_1['y_predict']))
+# print(model.calculate_rsd())
+# df = model.df_result
+metricFunctions(dataset_1["y_predict"], dataset_1["y_true"], 1).print_table()

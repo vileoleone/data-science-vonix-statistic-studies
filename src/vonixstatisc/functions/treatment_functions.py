@@ -1,11 +1,8 @@
 import numpy as np
 from collections import OrderedDict
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 
-def z_clean_outliers(data):
+def z_clean_outliers(data: dict) -> list:
     outliers = {}
     clean_dataset = {}
     threshold = 3
@@ -23,7 +20,7 @@ def z_clean_outliers(data):
     return [clean_dataset, outliers]
 
 
-def iq_clean_outliers(data):
+def iq_clean_outliers(data: list) -> list:
     outliers = []
     clean_dataset = []
 
@@ -40,21 +37,21 @@ def iq_clean_outliers(data):
     return [clean_dataset, outliers]
 
 
-def transform_object(object, period):
+def transform_dict(data: dict, period: int) -> dict:
     seconds = period * 60
     arr = []
     beginning = 0
     data_frame_obj = {}
     end = beginning + period
 
-    keys_array = list(object.keys())
+    keys_array = list(data.keys())
     total = len(keys_array)
-    last_timestamp = list(object.keys())[total - 1]
+    last_timestamp = list(data.keys())[total - 1]
     limit = last_timestamp - seconds
 
-    reverse_dict = dict(OrderedDict(reversed(list(object.items()))))
+    reverse_data = data(OrderedDict(reversed(list(dict.items()))))
 
-    for key, value in reverse_dict.items():
+    for key, value in reverse_data.items():
         # print({"key":key, "limit":limit, 'result' : key >= limit})
         if key >= limit:
             arr.append(value)
@@ -73,13 +70,15 @@ def transform_object(object, period):
     return data_frame_obj
 
 
-def transform_array(array, period, min_number, max_number):
+def transform_array(array: list, period: list, min_time: list, max_time: list):
     limit = period
     arr = []
     beginning = 0
     data_frame_obj = {}
     end = beginning + period
-    sort_data = [time for time in sorted(array) if time >= min_number and time <= max_number]
+    sort_data = [
+        time for time in sorted(array) if time >= min_time and time <= max_time
+    ]
     for time in sort_data:
         if time <= limit:
             arr.append(time)
@@ -97,19 +96,3 @@ def transform_array(array, period, min_number, max_number):
             limit += period
 
     return data_frame_obj
-
-
-def histogram_lineplot(data):
-    x_plot_array = list(data.keys())
-    y_plot_array = [len(data[i]) for i in data]
-    data_plot = pd.DataFrame({"period": x_plot_array, "number_of_calls": y_plot_array})
-    sns.lineplot(x="period", y="number_of_calls", data=data_plot)
-    return plt.show()
-
-
-def histogram_histplot(data):
-    x_plot_array = data
-    data_plot = pd.DataFrame({"talk_secs": x_plot_array})
-    print(data_plot)
-    sns.histplot(data=data_plot, x="talk_secs", kde=True)
-    return plt.show()

@@ -1,6 +1,6 @@
 from src.vonixstatisc.configs import DBConfigs
 from src.vonixstatisc.repository import CallRepository
-from src.vonixstatisc.metrics import (
+from src.vonixstatisc.functions import (
     z_clean_outliers,
     transform_object,
     histogram_histplot,
