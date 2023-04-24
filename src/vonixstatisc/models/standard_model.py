@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 
-class StandardModel:
+class standardModel:
     def __init__(self, data_train: list[int], data_predict: list[int]) -> None:
         self.__data = data_train
         self.__model = self.__construct_model()
@@ -34,3 +34,12 @@ class StandardModel:
                     break
 
         return {"y_predict": y_predict, "y_true": y_true}
+
+
+def compareStandardModel(data: dict[str,list]) -> dict:
+    rsd_dict = {}
+    for agent, array_data_train in data.items():
+        model = standardModel(data_train=array_data_train, data_predict=[])
+        rsd_dict[agent] = model.calculate_rsd()
+
+    return rsd_dict

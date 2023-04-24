@@ -34,6 +34,7 @@ class metricFunctions:
         console = Console()
 
         table = Table(show_header=True, header_style="bold" )
+
         table.add_column("mean_absolute_error", justify="center")
         table.add_column("root_mean_squared_error", justify="center")
         table.add_column("root_mean_squared_log_error", justify="center")

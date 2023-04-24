@@ -1,1 +1,1 @@
-from .standard_model import StandardModel
+from .standard_model import standardModel, compareStandardModel
