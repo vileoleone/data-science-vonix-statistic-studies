@@ -20,6 +20,11 @@ class standardModel:
         data = transform_array(self.__data, 90, 8, 5400)
         dict_rsd = {i: round(np.std(data[i]) / np.mean(data[i]), 3) for i in data}
         return dict_rsd
+    
+    def calculate_mean(self):
+        data = transform_array(self.__data, 90, 8, 5400)
+        dict_rsd = {i: round(np.mean(data[i]), 2) for i in data}
+        return dict_rsd
 
     def model(self):
         return self.__model
@@ -38,8 +43,20 @@ class standardModel:
 
 def compareStandardModel(data: dict[str,list]) -> dict:
     rsd_dict = {}
+    agents = []
+    rsd = []
+    period = []
+    mean = []
     for agent, array_data_train in data.items():
-        model = standardModel(data_train=array_data_train, data_predict=[])
-        rsd_dict[agent] = model.calculate_rsd()
-
+        agents.append(agent * len(array_data_train))
+        model= standardModel(data_train=array_data_train, data_predict=[])
+        rsd.extend(list(model.calculate_rsd().values()))
+        period.extend(list(model.calculate_rsd().keys()))
+        mean.extend(list(model.calculate_mean().values()))
+        
+    rsd_dict["agents"] = agents 
+    rsd_dict["rsd"] = rsd 
+    rsd_dict["period"] = period 
+    rsd_dict["mean"] = mean 
+    print(rsd_dict)
     return rsd_dict
