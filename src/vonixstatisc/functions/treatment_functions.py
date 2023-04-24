@@ -1,5 +1,6 @@
 import numpy as np
 from collections import OrderedDict
+from datetime import datetime
 
 
 def z_clean_outliers(data: dict) -> list:
@@ -37,56 +38,59 @@ def iq_clean_outliers(data: list) -> list:
     return [clean_dataset, outliers]
 
 
+def transform_agents_dict(data:dict, period: int)->dict:
+    return_dict = {}
+    for agent, value in data.items():
+        if len(value) >0:
+            return_dict[str(agent)] = transform_dict(value, period)
+    return return_dict
+
 def transform_dict(data: dict, period: int) -> dict:
     seconds = period * 60
     arr = []
-    beginning = 0
-    data_frame_obj = {}
-    end = beginning + period
+    return_dict = {}
 
     keys_array = list(data.keys())
-    total = len(keys_array)
-    last_timestamp = list(data.keys())[total - 1]
-    limit = last_timestamp - seconds
+    beginning = keys_array[0]
+    end = beginning - seconds
 
-    reverse_data = data(OrderedDict(reversed(list(dict.items()))))
-
-    for key, value in reverse_data.items():
-        # print({"key":key, "limit":limit, 'result' : key >= limit})
-        if key >= limit:
+    for key, value in data.items():
+        if key >= end:
             arr.append(value)
             continue
 
-        if key < limit:
-            data_frame_obj[f"{beginning}-{end}"] = arr
+        if key < end:
+            return_dict[f"{end}"] = arr
 
             arr = []
             arr.append(value)
 
-            beginning += period
-            end += period
-            limit = key - period
+            beginning -= seconds
+            end -= seconds
 
-    return data_frame_obj
+    return return_dict
 
 
 def transform_array(array: list, period: list, min_time: list, max_time: list):
     limit = period
     arr = []
     beginning = 0
-    data_frame_obj = {}
+    return_dict = {}
     end = beginning + period
+
     sort_data = [
-        time for time in sorted(array) if time >= min_time and time <= max_time
+        time for time in np.sort(array) if time >= min_time and time <= max_time
     ]
+   
     for time in sort_data:
+        last_time = sort_data[-1]
         if time <= limit:
             arr.append(time)
-            continue
+            
 
         if time > limit:
             if len(arr) > 0:
-                data_frame_obj[limit] = arr
+                return_dict[limit] = arr
 
             arr = []
             arr.append(time)
@@ -94,5 +98,25 @@ def transform_array(array: list, period: list, min_time: list, max_time: list):
             beginning += period
             end += period
             limit += period
+            
+        if time == last_time:
+            return_dict[limit] = arr
+            
+    return return_dict
 
-    return data_frame_obj
+def prepare_to_compare(data: dict, from_period:int, to_period:int)-> dict[str,list]:
+    return_obj = {}
+    
+    for agent, period_array in data.items():
+        talk_secs_array = []
+        
+        if len(period_array) > 0:
+            for timestamp, array in period_array.items():
+                
+                time = int(timestamp)
+                if time <= to_period or time > from_period:
+                    talk_secs_array.extend(array)
+                    
+        if len(talk_secs_array) > 0:            
+            return_obj[agent] =talk_secs_array 
+    return return_obj                

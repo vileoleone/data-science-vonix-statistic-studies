@@ -1,11 +1,14 @@
 from src.vonixstatisc.configs import DBConfigs
 from src.vonixstatisc.repository import CallRepository
 from src.vonixstatisc.functions import (
-    z_clean_outliers,
-    transform_object,
-    histogram_histplot,
+    transform_agents_dict,
+    prepare_to_compare
 )
+from src.vonixstatisc.models.standard_model import compareStandardModel
 
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
 connection_configs = DBConfigs(
     database_manager="mysql",
     user="callcenter",
@@ -17,10 +20,23 @@ connection_configs = DBConfigs(
 
 connection = connection_configs.connect
 
-repository = CallRepository(connection, "call_table_name")
+data = pd.read_sql()
 
-data = repository.select()
+""" repository = CallRepository(connection, "call_table_name")
 
-[dataset, outliers] = z_clean_outliers(data)
+data = repository.select_agents(1680566400,1680739200)
+queue = repository.select_queue(1680566400,1680739200)
+data['queue'] = queue
+data_prepare = transform_agents_dict(data, 120)
 
-print(transform_object(dataset, 120))
+data_3 = prepare_to_compare(data_prepare, 1680566400,1680739200)
+
+print(data_3)
+d = compareStandardModel(data_3)
+
+print(d)
+
+
+sns.set_theme(style="darkgrid")
+sns.stripplot(d, x="period", y="mean", hue="agents", jitter=False)
+plt.show() """

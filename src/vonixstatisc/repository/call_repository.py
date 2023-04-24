@@ -46,7 +46,7 @@ class CallRepository:
             Column("agent_id", Integer, index=True),
         )
 
-    def select(self, from_period=0, to_period=None):
+    def select_queue(self, from_period=0, to_period=None):
         if to_period is None:
             stmt = f"SELECT talk_secs, UNIX_TIMESTAMP(start_time) as time_at FROM {self.__table_name} WHERE talk_secs > 0 ORDER BY time_at DESC LIMIT 1;"
             with self.__database as db:
@@ -55,9 +55,35 @@ class CallRepository:
             db.session.commit()
 
         with self.__database as db:
-            stmt = f"SELECT talk_secs, UNIX_TIMESTAMP(start_time) as time_at FROM {self.__table_name} WHERE talk_secs > 0 AND UNIX_TIMESTAMP(start_time) BETWEEN {from_period} AND {to_period};"
+            stmt = f"SELECT talk_secs, UNIX_TIMESTAMP(start_time) as time_at FROM {self.__table_name} WHERE talk_secs > 0 AND UNIX_TIMESTAMP(start_time) BETWEEN {from_period} AND {to_period} ORDER BY time_at DESC;"
             arr = {}
             for row in db.session.execute(text(stmt)):
                 arr[row._mapping.time_at] = row._mapping.talk_secs
             db.session.commit()
             return arr
+    
+    def select_agents(self, from_period=0, to_period=None):
+        list_agents = []
+        stmt_list_agents = f"select distinct agent_id from {self.__table_name} where agent_id IS NOT NULL;"
+        if to_period is None:
+            stmt = f"SELECT talk_secs, UNIX_TIMESTAMP(start_time) as time_at FROM {self.__table_name} WHERE talk_secs > 0 ORDER BY time_at DESC LIMIT 1;"
+            
+            with self.__database as db:
+                for row in db.session.execute(text(stmt)):
+                    to_period = row._mapping.time_at
+            db.session.commit()
+            
+        with self.__database as db:
+            dict_from_db = {}
+
+            for row in db.session.execute(text(stmt_list_agents)):
+                list_agents.append(row._mapping.agent_id)
+            for agent in list_agents:
+                agent_dict = {}
+                stmt = f"SELECT talk_secs, UNIX_TIMESTAMP(start_time) as time_at FROM {self.__table_name} WHERE agent_id = {agent} AND talk_secs > 0 AND UNIX_TIMESTAMP(start_time) BETWEEN {from_period} AND {to_period} ORDER BY time_at DESC;"
+                for row in db.session.execute(text(stmt)):
+                    agent_dict[row._mapping.time_at] = row._mapping.talk_secs
+                dict_from_db[agent] = agent_dict
+
+            db.session.commit()
+            return dict_from_db
