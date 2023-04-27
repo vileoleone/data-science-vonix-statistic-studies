@@ -1,93 +1,45 @@
-# vonixsync
 
-vonixsync is a python library for syncronization/database mirroring of the vonix database
+fluxo para standard model
 
-## Installation
-
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install vonixsync.
-
-```bash
-pip install vonixsync
 ```
+from src.vonixstatisc.configs import DBConfigs
+from src.vonixstatisc.repository import CallRepository
+from src.vonixstatisc.functions import transform_agents_dict, prepare_to_compare
+from src.vonixstatisc.models.standard_model import compareStandardModel
 
-## Usage
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
 
-```python
-import vonixsync
-from vonixsync import DBConfigs
-from vonixsync import Syncronizer
-
-#Import the DBConfigs class. Provide the parameters used to construct the string used to connect to the database, according to its singular dialect.
 connection_configs = DBConfigs(
-    database_manager="postgres",
-    user="postgres",
-    password="postgres",
+    database_manager="mysql",
+    user="callcenter",
+    password="callcenter",
     hostname="localhost",
-    database="postgres",
-    port=5432,
+    database="callcenter",
+    port=3306,
 )
 
 connection = connection_configs.connect
 
-# Declare your token as a string type
-token = "token_provided_by_vonix_support"
+repository = CallRepository(connection, "call_table_name"
 
-#Import the Syncronizer Class to effectively syncronize the data to your database and name all tables 
-Syncronizer(
-    
-    token=token,
-    
-    connection=connection,
+data = repository.select_agents(1680566400,1680739200)
+queue = repository.select_queue(1680566400,1680739200)
 
-    agents="agent",
-    agent_event = "agent_event",
-    agent_pause="agent_pause",
-    agent_summary="agent_summary",
-    
-    calls="call",
-    call_ratings="call_rating",
-    
-    chats="chat",
-    chat_message="chat_message",
-    
-    profilers="profiler",
-    trees="trees",
-    
-    queues="queue",
-    queue_summary= "queue_summary",
-    
-    fromPeriod=1678449585,
-    
-    echo=True
+data['queue'] = queue
 
-).syncronize()
+data_prepare = transform_agents_dict(data, 15)
 
+data_compare = prepare_to_compare(data_prepare, 1680566400,1680739200)
+
+compareStandardModel(data_compare)
 ```
-Now run the code.
-#
-## Syncronizer Options
 
-Besides the obligatory token, database_string parameters and names of the tables to be syncronized, the Syncronizer has other options:
-#
-### fromPeriod
-#
-The timestamp parameter must be declared in timestamp format. It is an obligatory filter for the summary tables.
+Para anàlise de séries temporais:
 
-- the syncronizer will look for the most recent inserted row in the mirrored database and mirror from this row's date on. 
 
-- If no data is found in the mirrored database the syncronizer will mirror data using the fromPeriod timestamp value provided to the Syncronizer.
 
-- If no timestamp parameter was provided, the Syncronizer will use the timestamp from the day before the current date.
+select IFNULL(agent_id, 0), queue_id, direction, created_at, locality_id, call_type_id, hold_secs, ring_secs, initial_position, trunking_id, carrier_id, talk_secs as handling_time from calls where talk_secs > 0;
 
-```python
-Syncronizer(token, database, agents= "agent", fromPeriod = 1679067723 ).syncronize()
-```
-#
-### echo
-#
-The echo parameter by default is False. But if declared as True, it will enable the logging of all SQL commands during the active phase of the syncronizer.
-This a feature provided by the SQLAlchemy library. It can be set with or without other optional parameters.
-
-```python
-Syncronizer(token, database, queues = "queue", echo = True ).syncronize()
-```
+select agent_id, queue_id, direction, locality_id, call_type_id, hold_secs, ring_secs, initial_position, trunking_id, carrier_id, DATE_FORMAT(created_At, '%d') as 'day', DATE_FORMAT(created_At, '%M') as 'month', DATE_FORMAT(created_At, '%H') as 'hour', talk_secs as handling_time from calls where talk_secs > 0 and tak_secs < 90 and agent_id IS NOT NULL limit 1;

@@ -1,14 +1,10 @@
 from src.vonixstatisc.configs import DBConfigs
 from src.vonixstatisc.repository import CallRepository
-from src.vonixstatisc.functions import (
-    transform_agents_dict,
-    prepare_to_compare
-)
-from src.vonixstatisc.models.standard_model import compareStandardModel
 
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
+
 connection_configs = DBConfigs(
     database_manager="mysql",
     user="callcenter",
@@ -19,24 +15,7 @@ connection_configs = DBConfigs(
 )
 
 connection = connection_configs.connect
+stmt = "select agent_id, queue_id, direction, locality_id, call_type_id, hold_secs, ring_secs, initial_position, trunking_id, carrier_id, DATE_FORMAT(created_At, '%w') as 'week_day', DATE_FORMAT(created_At, '%M') as 'month', DATE_FORMAT(created_At, '%Y-%d-%m') as 'date', DATE_FORMAT(created_At, '%H:%m:%s') as 'day_time', created_at as 'datetime',  UNIX_TIMESTAMP(created_at) as 'timestamp', talk_secs as handling_time from calls where talk_secs > 0 and talk_secs < 200 and agent_id IS NOT NULL;"
+data = pd.read_sql(stmt, connection)
 
-data = pd.read_sql()
-
-""" repository = CallRepository(connection, "call_table_name")
-
-data = repository.select_agents(1680566400,1680739200)
-queue = repository.select_queue(1680566400,1680739200)
-data['queue'] = queue
-data_prepare = transform_agents_dict(data, 120)
-
-data_3 = prepare_to_compare(data_prepare, 1680566400,1680739200)
-
-print(data_3)
-d = compareStandardModel(data_3)
-
-print(d)
-
-
-sns.set_theme(style="darkgrid")
-sns.stripplot(d, x="period", y="mean", hue="agents", jitter=False)
-plt.show() """
+data.to_csv('src/vonixstatisc/data/pandas_data/data_fluency_queue_200.csv', index = False, encoding='utf-8')

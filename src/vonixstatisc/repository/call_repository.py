@@ -61,18 +61,18 @@ class CallRepository:
                 arr[row._mapping.time_at] = row._mapping.talk_secs
             db.session.commit()
             return arr
-    
+
     def select_agents(self, from_period=0, to_period=None):
         list_agents = []
         stmt_list_agents = f"select distinct agent_id from {self.__table_name} where agent_id IS NOT NULL;"
         if to_period is None:
             stmt = f"SELECT talk_secs, UNIX_TIMESTAMP(start_time) as time_at FROM {self.__table_name} WHERE talk_secs > 0 ORDER BY time_at DESC LIMIT 1;"
-            
+
             with self.__database as db:
                 for row in db.session.execute(text(stmt)):
                     to_period = row._mapping.time_at
             db.session.commit()
-            
+
         with self.__database as db:
             dict_from_db = {}
 

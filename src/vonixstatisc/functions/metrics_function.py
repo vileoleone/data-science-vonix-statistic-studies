@@ -5,11 +5,15 @@ from sklearn.metrics import (
     r2_score,
     mean_squared_log_error,
 )
-
 from rich.console import Console
 from rich.table import Table
+import pandas as pd
 
-class metricFunctions:
+
+class MetricFunctions:
+
+    """All metrics that can be used to compare the fitnesse for different models or between models"""
+
     def __init__(self, agent, y_predict, y_true, total_features) -> None:
         self.mae = round(mean_absolute_error(y_true, y_predict), 3)
         self.rmse = round(mean_squared_error(y_true, y_predict, squared=True), 3)
@@ -25,7 +29,9 @@ class metricFunctions:
         self.agent = agent
 
     def return_metrics(self):
-        return {
+        """returning metrics results for dataframe"""
+
+        return_dict = {
             "agent": self.agent,
             "mean_absolute_error": self.mae,
             "root_mean_squared_error": self.rmse,
@@ -35,7 +41,10 @@ class metricFunctions:
             "r2_score_adj": self.r2_score_adjusted,
         }
 
+        return pd.DataFrame(return_dict)
+
     def print_table(self):
+        """Method for pretty logging of models metrics"""
         console = Console()
 
         table = Table(show_header=True, header_style="bold")
