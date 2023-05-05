@@ -16,6 +16,8 @@ rich = "*"
 [dev-packages]
 black = "*"
 rich = "*"
+jupyter = "*"
+notebook = "*"
 
 [requires]
 python_version = "3.11"
